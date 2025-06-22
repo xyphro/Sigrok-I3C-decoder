@@ -36,6 +36,29 @@ Or here a view of the final files at the right location on a windows installatio
 
 ![](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/folderview.png)
 
+## Testing  
+
+The folder [decoder](decoder) also contains an example Waveform. This waveform was pragmatically decoded from a saleae logic capture, but the conversion was not perfect. Content wise it is correct, but the timeline is not - dummy samples got inserted.
+This is no functional problem though - the file decodes correctly.
+
+This .sr file also includes already an i3c decoder in the waveform.
+
+The decoder can also be executed to output textual decoding data using sigrok-cli:
+
+```plaintext
+sigrok-cli -i ExampleWaveform.sr -P i3c:scl=D0:sda=D1 -A i3c=address-read:address-write:data-read:data-write
+```
+  
+The parameters following -A select which aspects of the decoding you would like to see in the textual decoding.
+
+Execute:
+```plaintext
+sigrok-cli -P i3c --show
+```
+to see which items you can add to -A.
+
+
+
 ## Here a few decoding views:
 
 ### HDR-SDR decoding
@@ -47,9 +70,7 @@ Or here a view of the final files at the right location on a windows installatio
 ### HDR-ENTDAA decoding
 ![](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_entdaa.png)
 
-Note that for now it does not put a lot of useful information into the PYTHON pipe for decoding with higher level analyzer or textual analysis. This is addressed in the next release.
-When that step is done I'll officially inform sigrok team too about this analyzer.
-
+A unit test to get into official integration into Sigrok is yet to be done.
 # Other I3C projects for your reference
 ## Looking for an I3C analyzer plugin for Saleae Logic?
 
