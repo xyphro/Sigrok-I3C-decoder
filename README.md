@@ -51,7 +51,7 @@ Note that for now it does not put a lot of useful information into the PYTHON pi
 When that step is done I'll officially inform sigrok team too about this analyzer.
 
 # Other I3C projects for your reference
-## Look for an I3C analyzer plugin for Saleae Logic?
+## Looking for an I3C analyzer plugin for Saleae Logic?
 
 Have a look at my I3C daughter project, which is a Saleae Logic Analyzer plugin to decode I3C OD, I3C SDR and I3C HDR-DDR transfers:
 <a href="https://github.com/xyphro/XyphroLabs-I3C-Saleae-Protocol-Analyzer" target="_blank">https://github.com/xyphro/XyphroLabs-I3C-Saleae-Protocol-Analyzer</a> 
