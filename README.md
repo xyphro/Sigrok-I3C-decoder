@@ -14,6 +14,12 @@ Capabilities:
   * HDR-DDR mode: HDR restart, HDR exit
   * target reset condition is detected
   
+## Update 24 October '25
+
+I added DSView compatibility. That means, you can now also use this Analyzer also with DsLogic Analyzers.
+
+DSView implements a slightly different version compared to the current Sigrok Pulseview, but the change was easy to apply.
+In general Sigrog Pulseview is a bit more advanced in how it presents analyzed data - you can turn on/off fine grained what it should show and what not.
   
 ## Installation instructions
 
