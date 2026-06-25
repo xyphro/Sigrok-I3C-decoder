@@ -18,11 +18,11 @@
 ##
 
 '''
-I3C (spoken: "Eye-three-see") is a bidirectional, 
+I3C (spoken: "Eye-three-see") is a bidirectional,
 bus using two signals (SCL = serial clock line, SDA = serial data line).
 It's roots are from I²C protocol with several improvements.
-The specification is owned by MIPI Alliance. 
-This decoder implements SDR and HDR_DDR mode support. 
+The specification is owned by MIPI Alliance.
+This decoder implements SDR and HDR_DDR mode support.
 EntDAA data which does not follow normal SDR framing is also correctly decoded.
 '''
 

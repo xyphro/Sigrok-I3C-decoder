@@ -62,17 +62,17 @@ proto = {
     'START':         [0, 'Start', 'S'],
     'START REPEAT':  [1, 'Start repeat', 'Sr'],
     'STOP':          [2, 'Stop', 'P'],
-    
+
     'ACK':           [3, '{text}','{text}'],
     'SDR PARITY':    [4, 'Par{b:1d}', 'P{b:1d}', '{b:1d}'],
-    
+
     'BIT':           [5, '{b:1d}'],
     'ADDRESS READ':  [6, 'Address read: {b:02X}', 'AR: {b:02X}', '{b:02X}'],
     'ADDRESS WRITE': [7, 'Address write: {b:02X}', 'AW: {b:02X}', '{b:02X}'],
     'DATA READ':     [8, 'Data read: {b:02X}', 'DR: {b:02X}', '{b:02X}'],
     'DATA WRITE':    [9, 'Data write: {b:02X}', 'DW: {b:02X}', '{b:02X}'],
-    
-    
+
+
     'WARN':          [10, '{text}'],
     'BIT9':          [11, '{b:1d}'],
     'DEBUG':         [12, '{text}'],
@@ -96,7 +96,7 @@ OUTPUT_PYTHON format: TBD -> Implementation will follow
 # Meaning of table items:
 # command -> [annotation class, annotation text in order of decreasing length]
 
-    
+
 class Decoder(srd.Decoder):
     api_version = 3
     id = 'i3c'
@@ -166,30 +166,30 @@ class Decoder(srd.Decoder):
         self.pdu_bits = 0
         self.data_bits = []
         self.bitwidth = 0
-        
+
         self.mMode = mode_sdr
         self.mStateSdrDecode_state = 0
         self.mStateSdrDecode_bitcounter = 0
         self.mStateSdrDecode_dataword = 0
         self.mStateSdrDecode_ack_rising = 0
         self.mStateSdrDecode_ack_falling = 0
-        
+
         self.mStateSdrDecode_prevbitstate = False
         self.mStateSdrDecode_prevbitpos = 0
-        
+
         self.mIsFirstByte = True
         self.mIsWriteTransfer = False
         self.mentdaa_bytecounter = 0
         self.mentdaa_detector = 0
         self.menthdr_detector = 0
         self.mSpecialConditionDetectionState = 0
-        
+
         self.mStateDdrDecode_state = 0
         self.mStateDdrDecode_dataword = 0
         self.mStateDdrDecode_bitcounter = 0
-        
+
         self.annotationQueue = []
-        
+
 
 
     def metadata(self, key, value):
@@ -212,7 +212,7 @@ class Decoder(srd.Decoder):
     def putb(self, ss, es, data):
         self.annotationQueue.append([ss, es, self.out_binary, data])
         #self.put(ss, es, self.out_binary, data)
-        
+
     def processAnnotationQueue(self, s, event_sda_rising, event_sda_falling, event_scl_rising, event_scl_falling):
         if len(self.annotationQueue) > 0:
             rm = []
@@ -221,12 +221,12 @@ class Decoder(srd.Decoder):
                 es   = item[1]
                 pipe = item[2]
                 data = item[3]
-                
+
                 eventmatches = False
                 if type(es) is int: # end sample given - add it!
                     eventmatches = True
-                    
-                if type(es) is str: # event given -> signal number and type                
+
+                if type(es) is str: # event given -> signal number and type
                     eventmatches = eventmatches or ((es == ENDTYPE_SCL_RISING) and event_scl_rising)
                     eventmatches = eventmatches or ((es == ENDTYPE_SCL_FALLING) and event_scl_falling)
                     eventmatches = eventmatches or ((es == ENDTYPE_SCL_ANY) and (event_scl_rising or event_scl_falling))
@@ -234,18 +234,18 @@ class Decoder(srd.Decoder):
                     eventmatches = eventmatches or ((es == ENDTYPE_SDA_FALLING) and event_sda_falling)
                     eventmatches = eventmatches or ((es == ENDTYPE_SDA_ANY) and (event_sda_rising or event_sda_falling))
                     eventmatches = eventmatches or ((es == ENDTYPE_ANY) and (event_sda_rising or event_sda_falling or event_scl_rising or event_scl_falling))
-                        
+
                     if eventmatches:
                         es = s
 
                 if eventmatches:
                     self.put(ss, es, pipe, data)
                     rm.append(item)
-            
+
             for r in rm:
                 self.annotationQueue.remove(r)
-                
-        
+
+
     def decode(self):
         pulseview_mode = False
         mode_identified = False
@@ -254,7 +254,7 @@ class Decoder(srd.Decoder):
         while True:
             scl_state, sda_state = self.wait([{0: 'e'}, {1: 'e'}]) # wait for SCL or SDA to show a clock edge
             ss, es = self.samplenum, self.samplenum
-            
+
             if not mode_identified:
                 try:
                     scl_edge = self.matched[0]
@@ -262,23 +262,23 @@ class Decoder(srd.Decoder):
                 except:
                     pulseview_mode = True
                 mode_identified = True
-                
+
             if pulseview_mode:
                 scl_edge = (self.matched & 0b01) != 0
                 sda_edge = (self.matched & 0b10) != 0
             else:
                 scl_edge = self.matched[0]
-                sda_edge = self.matched[1]            
+                sda_edge = self.matched[1]
 
             if True:
-            
+
                 scl_rising  = scl_edge and scl_state
                 scl_falling = scl_edge and not scl_state
                 sda_rising  = sda_edge and sda_state
                 sda_falling = sda_edge and not sda_state
-            
+
                 #print(scl_rising)
-                
+
                 # process annotation queue
                 self.processAnnotationQueue(ss, sda_rising, sda_falling, scl_rising, scl_falling)
 
@@ -293,7 +293,7 @@ class Decoder(srd.Decoder):
                     event = event_stop
                 elif sda_falling and scl_state:
                     event = event_start
-                    
+
 
                 # Check for HDR Exit, HDR Restart or TARGET Reset pattern
                 if (not scl_state) and sda_falling:
@@ -307,12 +307,12 @@ class Decoder(srd.Decoder):
                     elif (self.mSpecialConditionDetectionState == 7) or (self.mSpecialConditionDetectionState == 8):
                         self.protocolevent(ss, protevent_targetreset, 0, 0, 0);
                     self.mSpecialConditionDetectionState = 0; # reset whenever scl is high
-                
+
                 # Interpret events
                 if event != event_none:
                     self.decodeevent(ss, scl_state, sda_state, event);
 
-            
+
     def decodeevent(self, s, scl, sda, event):
         #cls, texts = proto['DEBUG'][0], proto['DEBUG'][1:]
         #texts = [t.format(b = int(self.mStateSdrDecode_state)) for t in texts]
@@ -320,7 +320,7 @@ class Decoder(srd.Decoder):
 
         if self.mMode == mode_sdr:
             # wait for start
-            if self.mStateSdrDecode_state == 0: 
+            if self.mStateSdrDecode_state == 0:
                 if event == event_start:
                     self.mStateSdrDecode_prevbitpos = None
                     self.mStateSdrDecode_state = 1
@@ -329,9 +329,9 @@ class Decoder(srd.Decoder):
                     self.protocolevent(s, protevent_start, 0, 0, 0)
                 if event == event_stop:
                     self.protocolevent(s, protevent_stop, 0, 0, 0)
-                    
+
             # data bit receiver
-            elif self.mStateSdrDecode_state == 1: 
+            elif self.mStateSdrDecode_state == 1:
                 if event == event_rising_clock:
                     self.mStateSdrDecode_prevbitpos = s
                     self.mStateSdrDecode_prevbitstate = sda
@@ -346,7 +346,7 @@ class Decoder(srd.Decoder):
                         #cls, texts = proto['BIT'][0], proto['BIT'][1:]
                         #texts = [t.format(b = int(sda)) for t in texts]
                         #self.putg(s, ENDTYPE_SCL_RISING,  cls, texts)
-                        
+
                         if self.mStateSdrDecode_bitcounter == 0:
                             self.mStateSdrDecode_bytestartposition = s
                         self.mStateSdrDecode_prevbitpos = s
@@ -361,9 +361,9 @@ class Decoder(srd.Decoder):
                             self.mentdaa_detector = 0;
                         self.mIsWriteTransfer = True
                         self.mStateSdrDecode_bitcounter = 0
-                        
+
                 elif event == event_rising_clock:
-                                        
+
                     if self.mStateSdrDecode_bitcounter == 0:
                         self.mStateSdrDecode_bytestartposition = s
 
@@ -374,7 +374,7 @@ class Decoder(srd.Decoder):
                     if sda:
                         self.mStateSdrDecode_dataword = self.mStateSdrDecode_dataword | (1<<(7-self.mStateSdrDecode_bitcounter))
                     self.mStateSdrDecode_bitcounter += 1
-                    
+
                 elif (event == event_falling_clock) and (self.mStateSdrDecode_bitcounter == 8): # 2 purposes: add bit and step to bit9 state
 
                     #cls, texts = proto['BIT'][0], proto['BIT'][1:]
@@ -398,7 +398,7 @@ class Decoder(srd.Decoder):
                     texts = [t.format(b = int(sda)) for t in texts]
                     self.putg(s, s, cls, texts)
                     self.mStateSdrDecode_ack_rising = sda
-                    self.mStateSdrDecode_bytestopposition = s 
+                    self.mStateSdrDecode_bytestopposition = s
                 elif event == event_falling_clock:
                     if self.mIsFirstByte: # On first byte the bit 9 contains ACK/NAK and CONTINUATION bit
                         cls, texts = proto['ACK'][0], proto['ACK'][1:]
@@ -424,7 +424,7 @@ class Decoder(srd.Decoder):
                             texts[0] = txt
                             texts[1] = txt2
                         self.putg(s, ENDTYPE_SCL_RISING, cls, texts)
-                        
+
                     else:
                         if self.mIsWriteTransfer: # parity bit
                             cls, texts = proto['SDR PARITY'][0], proto['SDR PARITY'][1:]
@@ -443,7 +443,7 @@ class Decoder(srd.Decoder):
                                 texts[0] = txt
                                 texts[1] = txt2
                             self.putg(self.mStateSdrDecode_bytestopposition, s, cls, texts)
-                            
+
                             cls, texts = proto['ACK'][0], proto['ACK'][1:]
                             if sda:
                                 txt = 'CONT'
@@ -456,23 +456,23 @@ class Decoder(srd.Decoder):
                                 texts[0] = txt
                                 texts[1] = txt2
                             self.putg(s, ENDTYPE_SCL_RISING, cls, texts)
-                            
+
                             pass #self.putg(self.mStateSdrDecode_bytestopposition, s, cls, texts)
-                    
+
                     # update bits pane
                     cls, texts = proto['BIT9'][0], proto['BIT9'][1:]
                     texts = [t.format(b = int(sda)) for t in texts]
                     self.putg(s, s, cls, texts)
-                    
+
                     self.mStateSdrDecode_ack_falling = sda
-                    self.protocolevent([self.mStateSdrDecode_bytestartposition, self.mStateSdrDecode_bytestopposition], protevent_data, self.mStateSdrDecode_dataword, self.mStateSdrDecode_ack_rising, self.mStateSdrDecode_ack_falling)                    
+                    self.protocolevent([self.mStateSdrDecode_bytestartposition, self.mStateSdrDecode_bytestopposition], protevent_data, self.mStateSdrDecode_dataword, self.mStateSdrDecode_ack_rising, self.mStateSdrDecode_ack_falling)
                     self.mStateSdrDecode_state= 1
             # unexpected state - we should never get here
             else:
                 self.mStateSdrDecode_state = 0;
-                
+
         elif self.mMode == mode_ddr:
-            
+
             if (event == event_rising_clock) or (event == event_falling_clock):
                 if self.mStateDdrDecode_bitcounter == 0:
                     self.mStateSdrDecode_bytestartposition = s
@@ -481,7 +481,7 @@ class Decoder(srd.Decoder):
                 suppress = False
                 if not self.mIsFirstByte:
                     suppress = (self.ddr_preamble == 1) and (self.mStateDdrDecode_bitcounter > 8)
-    
+
                 if not suppress:
                     cls, texts = proto['BIT'][0], proto['BIT'][1:]
                     texts = [t.format(b = int(sda)) for t in texts]
@@ -492,18 +492,18 @@ class Decoder(srd.Decoder):
                     self.mStateDdrDecode_dataword = self.mStateDdrDecode_dataword | (1<<(19-self.mStateDdrDecode_bitcounter))
                 self.mStateDdrDecode_bitcounter += 1
 
-                
-                if self.mStateDdrDecode_state == 0: # preamble state                                
-                
+
+                if self.mStateDdrDecode_state == 0: # preamble state
+
                     if self.mStateDdrDecode_bitcounter == 2:
                         self.ddr_preamble = self.mStateDdrDecode_dataword >> 18
                         self.protocolevent([self.mStateSdrDecode_bytestartposition, ENDTYPE_SCL_ANY], protevent_hdr_preamble, self.ddr_preamble, 0, 0)
                         self.mStateDdrDecode_dataword = 0
                         self.mStateDdrDecode_bitcounter = 0
                         self.mStateDdrDecode_state = 1
-                        
+
                 elif self.mStateDdrDecode_state == 1: # datastate
-                                            
+
                     if self.mStateDdrDecode_bitcounter == 16:
                         self.mStateDdrDecode_dataword = self.mStateDdrDecode_dataword >> 4
                         self.protocolevent([self.mStateSdrDecode_bytestartposition, ENDTYPE_SCL_ANY], protevent_hdr_dataword, self.mStateDdrDecode_dataword, 0, 0)
@@ -516,7 +516,7 @@ class Decoder(srd.Decoder):
                         self.mStateDdrDecode_dataword = 0
                         self.mStateDdrDecode_bitcounter = 0
                         self.mStateDdrDecode_state = 0
-                        
+
                 elif self.mStateDdrDecode_state == 2: # parity state
                     if self.mStateDdrDecode_bitcounter == 2:
                         self.mStateDdrDecode_dataword = self.mStateDdrDecode_dataword >> 18
@@ -524,7 +524,7 @@ class Decoder(srd.Decoder):
                         self.mStateDdrDecode_dataword = 0
                         self.mStateDdrDecode_bitcounter = 0
                         self.mStateDdrDecode_state = 0
-        
+
     def protocolevent(self, s, event, dataword, ack_rising, ack_falling):
         # cls, texts = proto['DEBUG'][0], proto['DEBUG'][1:]
         # texts = [t.format(text = 'a_'+str(self.mIsWriteTransfer)) for t in texts]
@@ -532,7 +532,7 @@ class Decoder(srd.Decoder):
         # if type(u) is list:
         #     u = u[0]
         # self.putg(u, u, cls, texts)
-        
+
         if event == protevent_hdr_preamble:
             cmd = 'HDR PREAMBLE'
             cls, texts = proto[cmd][0], proto[cmd][1:]
@@ -545,7 +545,7 @@ class Decoder(srd.Decoder):
             self.putg(s[0], s[1], cls, texts)
         elif event == protevent_hdr_restart:
             self.mIsFirstByte = True
-            
+
 
             self.putp(s, s, ['HDR RESTART', None])
             cls, texts = proto['HDR RESTART'][0], proto['HDR RESTART'][1:]
@@ -557,12 +557,12 @@ class Decoder(srd.Decoder):
             self.mStateSdrDecode_state = 0;
             self.mentdaa_detector = 0;
             self.menthdr_detector = 0;
-            
+
             self.putp(s, s, ['HDR EXIT', None])
             cls, texts = proto['HDR EXIT'][0], proto['HDR EXIT'][1:]
             self.putg(s, s, cls, texts)
-            
-            
+
+
         elif event == protevent_targetreset:
             self.mStateSdrDecode_state = 0;
             self.mentdaa_detector = 0;
@@ -573,7 +573,7 @@ class Decoder(srd.Decoder):
             self.mentdaa_detector = 0
             self.menthdr_detector = 0
             self.mMode = mode_sdr
-            
+
         elif event == protevent_start:
             self.mIsFirstByte = True
             self.putp(s, s, ['START', None])
@@ -581,7 +581,7 @@ class Decoder(srd.Decoder):
             self.putg(s, s, cls, texts)
             self.mentdaa_detector = 1;
             self.menthdr_detector = 1;
-            
+
         elif event == protevent_restart:
             self.mIsFirstByte = True
             self.putp(s, s, ['START REPEAT', None])
@@ -591,7 +591,7 @@ class Decoder(srd.Decoder):
             	self.mentdaa_detector = 4
             else:
                 self.menthdr_detector = 1
-            
+
         elif event == protevent_stop:
             self.putp(s, s, ['STOP', None])
             cls, texts = proto['STOP'][0], proto['STOP'][1:]
@@ -611,7 +611,7 @@ class Decoder(srd.Decoder):
             texts = [t.format(b = dataword) for t in texts]
             self.putg(s[0], ENDTYPE_SCL_RISING, cls, texts)
 
-            
+
         elif event == protevent_data:
             # enthdr detector
             if (self.menthdr_detector == 1) and (dataword == (0x7e<<1)) and (not ack_rising):
@@ -620,7 +620,7 @@ class Decoder(srd.Decoder):
                 self.mMode = mode_ddr
                 self.mStateDdrDecode_bitcounter = 0
                 self.mIsFirstByte = True
-                
+
             # entdaa detector
             if (self.mentdaa_detector == 1) and (dataword == (0x7e<<1)) and (not ack_rising):
                 self.mentdaa_detector = 2
@@ -633,9 +633,9 @@ class Decoder(srd.Decoder):
                 # purposefully do nothing
                 pass
             else:
-                self.mentdaa_detector = 0                
-                                                
-            
+                self.mentdaa_detector = 0
+
+
             if self.mIsFirstByte:
                 cmd = 'ADDRESS '
                 self.mIsWriteTransfer = ((dataword & 1) == 0)
@@ -654,7 +654,7 @@ class Decoder(srd.Decoder):
 
             if self.mMode == mode_ddr:
                 self.mIsFirstByte = True;
-            
+
         elif event == protevent_hdr_dataword:
             if self.mIsFirstByte:
                 cmd = 'HDR CMD'
@@ -670,7 +670,7 @@ class Decoder(srd.Decoder):
             cls, texts = proto[cmd][0], proto[cmd][1:]
             texts = [t.format(b = dataword) for t in texts]
             self.putg(s[0], s[1], cls, texts)
-            
+
         elif event == protevent_hdr_crcword:
             cmd = 'CRC'
 
