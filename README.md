@@ -40,7 +40,7 @@ Unzip the i3c.zip file in that directory such that you have the following folder
 
 Or here a view of the final files at the right location on a windows installation:
 
-![](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/folderview.png)
+![folderview](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/folderview.png)
 
 ## Testing
 
@@ -68,13 +68,13 @@ to see which items you can add to -A.
 ## Here a few decoding views:
 
 ### HDR-SDR decoding
-![](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_sdr.png)
+![HDR-SDR decoding](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_sdr.png)
 
 ### HDR-DDR decoding
-![](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_ddr.png)
+![HDR-DDR decoding](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_ddr.png)
 
 ### HDR-ENTDAA decoding
-![](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_entdaa.png)
+![HDR-ENTDAA decoding](https://raw.githubusercontent.com/xyphro/Sigrok-I3C-decoder/master/pictures/decoderview_entdaa.png)
 
 A unit test to get into official integration into Sigrok is yet to be done.
 # Other I3C projects for your reference
