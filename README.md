@@ -24,7 +24,7 @@ In general Sigrog Pulseview is a bit more advanced in how it presents analyzed d
 ## Installation instructions
 
 Clone this repository or select the download option on the top right.
-The I3C analyzer itself is located in the folder [decoder](decoder) in the i3c.zip file.
+The I3C analyzer itself is located in the folder [build](build) in the i3c.zip file.
 
 Navigate to your pulseview decoders directory.
 For a windows installation with default location you can find it under:
@@ -44,7 +44,7 @@ Or here a view of the final files at the right location on a windows installatio
 
 ## Testing
 
-The folder [decoder](decoder) also contains an example Waveform. This waveform was pragmatically decoded from a saleae logic capture, but the conversion was not perfect. Content wise it is correct, but the timeline is not - dummy samples got inserted.
+The folder [build](build) also contains an example Waveform. This waveform was pragmatically decoded from a saleae logic capture, but the conversion was not perfect. Content wise it is correct, but the timeline is not - dummy samples got inserted.
 This is no functional problem though - the file decodes correctly.
 
 This .sr file also includes already an i3c decoder in the waveform.
