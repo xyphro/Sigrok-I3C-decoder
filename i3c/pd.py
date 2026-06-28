@@ -19,7 +19,6 @@
 
 # TODO: Enable protocol decoder by outputing more details to python pipe
 
-from common.srdhelper import bitpack_msb
 import sigrokdecode as srd
 
 event_none = 0
